@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MEME OS — Scanner</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="scanner-page">
+    <!-- Top bar -->
+    <header class="scanner-header">
+        <div class="scanner-header-left">
+            <a href="dashboard.html" class="back-link">
+                <i data-lucide="arrow-left" class="nav-icon"></i>
+                <span>Dashboard</span>
+            </a>
+            <span class="scanner-brand">◈ MEME OS — Scanner</span>
+        </div>
+        <div class="scanner-header-right">
+            <span class="live-badge"><span class="pulse-dot"></span> LIVE</span>
+            <button class="btn btn-outline" id="scannerRefreshBtn">
+                <i data-lucide="refresh-cw" class="btn-icon"></i> Refresh
+            </button>
+        </div>
+    </header>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Main scanner content -->
+    <main class="scanner-main">
+        <div class="scanner-page-header">
+            <h1 class="page-title">Meme Scanner</h1>
+            <p class="page-subtitle">Find interesting market activity.</p>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="scanner-controls">
+            <div class="search-row">
+                <input type="text" id="scannerSearchInput" placeholder="Search token name, symbol or address…" class="text-input search-input" />
+                <button class="btn btn-primary" id="scannerSearchBtn">
+                    <i data-lucide="search" class="btn-icon"></i> Search
+                </button>
+            </div>
+
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Chain</label>
+                    <select id="scannerChainFilter" class="text-input">
+                        <option value="">All Chains</option>
+                        <option value="solana">Solana</option>
+                        <option value="ethereum">Ethereum</option>
+                        <option value="bsc">BNB Smart Chain</option>
+                        <option value="base">Base</option>
+                        <option value="polygon">Polygon</option>
+                        <option value="arbitrum">Arbitrum</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Min MC</label>
+                    <select id="scannerMcFilter" class="text-input">
+                        <option value="">Any</option>
+                        <option value="100000">$100k+</option>
+                        <option value="500000">$500k+</option>
+                        <option value="1000000">$1M+</option>
+                        <option value="10000000">$10M+</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Min Liquidity</label>
+                    <select id="scannerLiquidityFilter" class="text-input">
+                        <option value="">Any</option>
+                        <option value="10000">$10k+</option>
+                        <option value="50000">$50k+</option>
+                        <option value="100000">$100k+</option>
+                        <option value="500000">$500k+</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Min Volume</label>
+                    <select id="scannerVolumeFilter" class="text-input">
+                        <option value="">Any</option>
+                        <option value="50000">$50k+</option>
+                        <option value="100000">$100k+</option>
+                        <option value="500000">$500k+</option>
+                        <option value="1000000">$1M+</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>24H Change</label>
+                    <select id="scannerChangeFilter" class="text-input">
+                        <option value="">Any</option>
+                        <option value="positive">Positive</option>
+                        <option value="negative">Negative</option>
+                        <option value="10">+10%+</option>
+                        <option value="25">+25%+</option>
+                        <option value="50">+50%+</option>
+                        <option value="-10">-10% or lower</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Sort By</label>
+                    <select id="scannerSortSelect" class="text-input">
+                        <option value="volume">Volume</option>
+                        <option value="liquidity">Liquidity</option>
+                        <option value="marketCap">Market Cap</option>
+                        <option value="priceChange">24H Change</option>
+                        <option value="txns">Transactions</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scanner Table -->
+        <div class="scanner-table-section">
+            <div class="table-wrapper">
+                <table class="data-table" id="scannerTable">
+                    <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>Price</th>
+                            <th>MC</th>
+                            <th>Liquidity</th>
+                            <th>Volume</th>
+                            <th>24H</th>
+                            <th>Buys</th>
+                            <th>Sells</th>
+                            <th>Age</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scannerTableBody">
+                        <tr><td colspan="9" class="table-loading">
+                            <div class="skeleton skeleton-row"></div>
+                            <div class="skeleton skeleton-row"></div>
+                            <div class="skeleton skeleton-row"></div>
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="last-updated" id="scannerLastUpdated"></p>
+        </div>
+
+        <!-- Error state -->
+        <div class="error-state" id="scannerError" style="display:none;">
+            <i data-lucide="wifi-off" class="error-icon"></i>
+            <p>Market data temporarily unavailable.</p>
+            <button class="btn btn-primary" id="scannerRetryBtn">Retry</button>
+        </div>
+    </main>
+
+    <!-- ===== TOKEN DETAILS MODAL ===== -->
+    <div class="modal-overlay" id="scannerTokenModalOverlay" style="display:none;">
+        <div class="modal" id="scannerTokenModal">
+            <div class="modal-header">
+                <h2 id="scannerTokenModalTitle">$TOKEN</h2>
+                <button class="modal-close" data-close-modal="scannerTokenModalOverlay">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="scannerTokenModalBody">
+                <p>Loading…</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="scannerAddWatchlistBtn">
+                    <i data-lucide="star" class="btn-icon"></i> Add to Watchlist
+                </button>
+                <button class="btn btn-outline" id="scannerTokenRefreshBtn">
+                    <i data-lucide="refresh-cw" class="btn-icon"></i> Refresh
+                </button>
+                <button class="btn btn-outline" data-close-modal="scannerTokenModalOverlay">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RISK ANALYSIS MODAL ===== -->
+    <div class="modal-overlay" id="scannerRiskModalOverlay" style="display:none;">
+        <div class="modal" id="scannerRiskModal">
+            <div class="modal-header">
+                <h2>Risk Analysis</h2>
+                <button class="modal-close" data-close-modal="scannerRiskModalOverlay">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="scannerRiskModalBody">
+                <p>Analyzing…</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" data-close-modal="scannerRiskModalOverlay">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== WATCHLIST CATEGORY MODAL ===== -->
+    <div class="modal-overlay" id="scannerWatchlistOverlay" style="display:none;">
+        <div class="modal modal-sm" id="scannerWatchlistModal">
+            <div class="modal-header">
+                <h3>Add to Watchlist</h3>
+                <button class="modal-close" data-close-modal="scannerWatchlistOverlay">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="watchlist-modal-token" id="scannerWatchlistToken">$TOKEN</p>
+                <p class="watchlist-modal-address" id="scannerWatchlistAddress"></p>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="scannerWatchlistCategory">
+                        <option value="potential">🔥 Potential</option>
+                        <option value="watching">👀 Watching</option>
+                        <option value="waiting">⏳ Waiting</option>
+                        <option value="avoid">❌ Avoid</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="scannerWatchlistNotes" rows="2" placeholder="Optional notes…"></textarea>
+                </div>
+                <button class="btn btn-primary btn-block" id="scannerWatchlistConfirmBtn">Add Token</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
