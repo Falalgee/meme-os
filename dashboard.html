@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MEME OS — Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="dashboard-page">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-symbol">◈</span>
+            <span class="sidebar-brand-name">MEME&nbsp;OS</span>
+            <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav" id="sidebarNav">
+            <p class="nav-section-label">Overview</p>
+            <a href="#" class="nav-item active" data-section="overview">
+                <i data-lucide="layout-dashboard" class="nav-icon"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <p class="nav-section-label">Discover</p>
+            <a href="scanner.html" class="nav-item">
+                <i data-lucide="scan-search" class="nav-icon"></i>
+                <span>Scanner</span>
+            </a>
+            <a href="#" class="nav-item" data-section="smart-money">
+                <i data-lucide="brain" class="nav-icon"></i>
+                <span>Smart Money</span>
+            </a>
+
+            <p class="nav-section-label">Analysis</p>
+            <a href="#" class="nav-item" data-section="risk-scanner">
+                <i data-lucide="shield-alert" class="nav-icon"></i>
+                <span>Risk Scanner</span>
+            </a>
+            <a href="#" class="nav-item" data-section="watchlist">
+                <i data-lucide="star" class="nav-icon"></i>
+                <span>Watchlist</span>
+            </a>
+
+            <p class="nav-section-label">Trading</p>
+            <a href="#" class="nav-item" data-section="trades">
+                <i data-lucide="arrow-left-right" class="nav-icon"></i>
+                <span>Trades</span>
+            </a>
+            <a href="#" class="nav-item" data-section="journal">
+                <i data-lucide="book-open" class="nav-icon"></i>
+                <span>Journal</span>
+            </a>
+            <a href="#" class="nav-item" data-section="analytics">
+                <i data-lucide="bar-chart-3" class="nav-icon"></i>
+                <span>Analytics</span>
+            </a>
+
+            <p class="nav-section-label">System</p>
+            <a href="#" class="nav-item" data-section="settings">
+                <i data-lucide="settings" class="nav-icon"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" id="logoutBtn">
+                <i data-lucide="log-out" class="nav-icon"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Mobile overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main content -->
+    <main class="main-content">
+        <!-- Mobile header -->
+        <header class="mobile-header">
+            <button class="hamburger" id="hamburgerBtn" aria-label="Open menu">
+                <i data-lucide="menu"></i>
+            </button>
+            <span class="mobile-brand">◈ MEME OS</span>
+        </header>
+
+        <!-- Toast container -->
+        <div class="toast-container" id="toastContainer"></div>
+
+        <!-- ===== OVERVIEW SECTION ===== -->
+        <section class="content-section active" id="section-overview">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Good morning, Trader</h1>
+                    <p class="page-subtitle">Your meme coin intelligence at a glance.</p>
+                </div>
+                <div class="header-actions">
+                    <span class="live-badge"><span class="pulse-dot"></span> LIVE MARKET DATA</span>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <p class="stat-label">Portfolio Value</p>
+                    <p class="stat-value" id="statPortfolio">$12,840.50</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Total P&L</p>
+                    <p class="stat-value text-success" id="statPnL">+$2,840.50</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Win Rate</p>
+                    <p class="stat-value" id="statWinRate">68.4%</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Total Trades</p>
+                    <p class="stat-value" id="statTrades">57</p>
+                </div>
+            </div>
+
+            <!-- Equity Chart -->
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h3>Demo Portfolio Performance</h3>
+                    <span class="chart-badge">SIMULATED</span>
+                </div>
+                <canvas id="equityChart" height="120"></canvas>
+            </div>
+
+            <!-- Live Market Pulse -->
+            <div class="market-pulse-section">
+                <div class="section-header-row">
+                    <h3>Live Market Pulse</h3>
+                    <span class="live-badge small"><span class="pulse-dot"></span> LIVE</span>
+                </div>
+                <div id="marketPulse" class="market-pulse-grid">
+                    <div class="skeleton skeleton-pulse"></div>
+                    <div class="skeleton skeleton-pulse"></div>
+                    <div class="skeleton skeleton-pulse"></div>
+                    <div class="skeleton skeleton-pulse"></div>
+                </div>
+            </div>
+
+            <!-- Live Token Table -->
+            <div class="token-table-section">
+                <div class="section-header-row">
+                    <h3>Live Token Table</h3>
+                    <span class="live-badge small"><span class="pulse-dot"></span> LIVE</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table" id="overviewTokenTable">
+                        <thead>
+                            <tr>
+                                <th>Token</th>
+                                <th>Price</th>
+                                <th>Market Cap</th>
+                                <th>Liquidity</th>
+                                <th>Volume</th>
+                                <th>24H</th>
+                                <th>Buys</th>
+                                <th>Sells</th>
+                            </tr>
+                        </thead>
+                        <tbody id="overviewTokenBody">
+                            <tr><td colspan="8" class="table-loading">Loading live data…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="last-updated" id="overviewLastUpdated"></p>
+            </div>
+        </section>
+
+        <!-- ===== SMART MONEY SECTION ===== -->
+        <section class="content-section" id="section-smart-money">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Smart Money</h1>
+                    <p class="page-subtitle">Simulated wallet activity for demonstration.</p>
+                </div>
+                <span class="badge-warning">SIMULATED WALLET ACTIVITY</span>
+            </div>
+
+            <div class="smart-money-grid">
+                <div class="smart-wallet-card">
+                    <div class="wallet-header">
+                        <span class="wallet-name">Alpha 01</span>
+                        <span class="badge-bullish">TOP PERFORMER</span>
+                    </div>
+                    <div class="wallet-stats">
+                        <p><span>Win Rate:</span> <strong>74%</strong></p>
+                        <p><span>P&L:</span> <strong class="text-success">+$48,420</strong></p>
+                    </div>
+                </div>
+                <div class="smart-wallet-card">
+                    <div class="wallet-header">
+                        <span class="wallet-name">Alpha 02</span>
+                    </div>
+                    <div class="wallet-stats">
+                        <p><span>Win Rate:</span> <strong>69%</strong></p>
+                        <p><span>P&L:</span> <strong class="text-success">+$31,820</strong></p>
+                    </div>
+                </div>
+                <div class="smart-wallet-card">
+                    <div class="wallet-header">
+                        <span class="wallet-name">Alpha 03</span>
+                    </div>
+                    <div class="wallet-stats">
+                        <p><span>Win Rate:</span> <strong>61%</strong></p>
+                        <p><span>P&L:</span> <strong class="text-success">+$18,240</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="activity-feed">
+                <h3>Activity Feed</h3>
+                <div id="smartMoneyFeed" class="feed-list"></div>
+            </div>
+        </section>
+
+        <!-- ===== RISK SCANNER SECTION ===== -->
+        <section class="content-section" id="section-risk-scanner">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Risk Scanner</h1>
+                    <p class="page-subtitle">Analyze any token pair for market risk signals.</p>
+                </div>
+            </div>
+
+            <div class="risk-input-row">
+                <input type="text" id="riskAddressInput" placeholder="Enter token or pair address…" class="text-input" />
+                <button class="btn btn-primary" id="riskScanBtn">
+                    <i data-lucide="scan" class="btn-icon"></i> Scan
+                </button>
+            </div>
+
+            <div id="riskResult" class="risk-result" style="display:none;">
+                <div class="risk-score-card">
+                    <div class="risk-score-main">
+                        <p class="risk-score-label">Market Risk</p>
+                        <p class="risk-score-value" id="riskScoreValue">—</p>
+                        <p class="risk-score-verdict" id="riskVerdict">—</p>
+                    </div>
+                    <div class="risk-breakdown" id="riskBreakdown"></div>
+                </div>
+                <p class="risk-disclaimer">Demo analysis — not financial advice.</p>
+            </div>
+        </section>
+
+        <!-- ===== WATCHLIST SECTION ===== -->
+        <section class="content-section" id="section-watchlist">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Watchlist</h1>
+                    <p class="page-subtitle">Track tokens you're interested in.</p>
+                </div>
+                <button class="btn btn-outline" id="watchlistRefreshBtn">
+                    <i data-lucide="refresh-cw" class="btn-icon"></i> Refresh
+                </button>
+            </div>
+
+            <div id="watchlistContainer">
+                <div class="empty-state" id="watchlistEmpty">
+                    <i data-lucide="star" class="empty-icon"></i>
+                    <p>No tokens in your watchlist yet.</p>
+                    <p class="empty-hint">Add tokens from the Scanner or Token Details modal.</p>
+                </div>
+                <div id="watchlistContent" class="watchlist-grid" style="display:none;"></div>
+            </div>
+        </section>
+
+        <!-- ===== TRADES SECTION ===== -->
+        <section class="content-section" id="section-trades">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Trades</h1>
+                    <p class="page-subtitle">Your trading history and performance.</p>
+                </div>
+                <button class="btn btn-primary" id="addTradeBtn">
+                    <i data-lucide="plus" class="btn-icon"></i> Add Trade
+                </button>
+            </div>
+
+            <div class="stats-grid compact" id="tradeStatsGrid">
+                <div class="stat-card">
+                    <p class="stat-label">Total P&L</p>
+                    <p class="stat-value" id="tradeTotalPnL">—</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Win Rate</p>
+                    <p class="stat-value" id="tradeWinRate">—</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Avg Win</p>
+                    <p class="stat-value text-success" id="tradeAvgWin">—</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Avg Loss</p>
+                    <p class="stat-value text-danger" id="tradeAvgLoss">—</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table" id="tradesTable">
+                    <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>Entry</th>
+                            <th>Exit</th>
+                            <th>Position</th>
+                            <th>P&L</th>
+                            <th>ROI</th>
+                            <th>Setup</th>
+                            <th>Result</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradesBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ===== JOURNAL SECTION ===== -->
+        <section class="content-section" id="section-journal">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Journal</h1>
+                    <p class="page-subtitle">Log your thoughts and lessons learned.</p>
+                </div>
+                <button class="btn btn-primary" id="addJournalBtn">
+                    <i data-lucide="plus" class="btn-icon"></i> New Entry
+                </button>
+            </div>
+
+            <div id="journalContainer">
+                <div class="empty-state" id="journalEmpty">
+                    <i data-lucide="book-open" class="empty-icon"></i>
+                    <p>No journal entries yet.</p>
+                </div>
+                <div id="journalContent" class="journal-grid" style="display:none;"></div>
+            </div>
+        </section>
+
+        <!-- ===== ANALYTICS SECTION ===== -->
+        <section class="content-section" id="section-analytics">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Analytics</h1>
+                    <p class="page-subtitle">Performance insights from your demo trade data.</p>
+                </div>
+            </div>
+
+            <div class="analytics-charts-grid">
+                <div class="chart-card">
+                    <h3>Equity Curve</h3>
+                    <canvas id="analyticsEquityChart" height="150"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Daily P&L</h3>
+                    <canvas id="analyticsDailyChart" height="150"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Win vs Loss</h3>
+                    <canvas id="analyticsWinLossChart" height="150"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Setup Performance</h3>
+                    <canvas id="analyticsSetupChart" height="150"></canvas>
+                </div>
+                <div class="chart-card full-width">
+                    <h3>Mistake Impact</h3>
+                    <canvas id="analyticsMistakeChart" height="120"></canvas>
+                </div>
+            </div>
+
+            <div class="setup-analytics-table">
+                <h3>Setup Analytics</h3>
+                <div class="table-wrapper">
+                    <table class="data-table" id="setupAnalyticsTable">
+                        <thead>
+                            <tr>
+                                <th>Setup</th>
+                                <th>Trades</th>
+                                <th>Win Rate</th>
+                                <th>Avg P&L</th>
+                                <th>Total P&L</th>
+                            </tr>
+                        </thead>
+                        <tbody id="setupAnalyticsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SETTINGS SECTION ===== -->
+        <section class="content-section" id="section-settings">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Settings</h1>
+                    <p class="page-subtitle">Manage your demo account and preferences.</p>
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <div class="settings-profile">
+                    <h3>Demo Trader</h3>
+                    <p>demo@memeos.local</p>
+                </div>
+                <hr class="settings-divider" />
+                <div class="settings-row">
+                    <label for="settingsChain">Default Chain</label>
+                    <select id="settingsChain" class="text-input">
+                        <option value="solana">Solana</option>
+                        <option value="ethereum">Ethereum</option>
+                        <option value="bsc">BNB Smart Chain</option>
+                        <option value="base">Base</option>
+                    </select>
+                </div>
+                <div class="settings-row">
+                    <label>Base Currency</label>
+                    <span class="settings-static">USD</span>
+                </div>
+                <div class="settings-row">
+                    <label>Starting Capital</label>
+                    <span class="settings-static">$10,000</span>
+                </div>
+                <hr class="settings-divider" />
+                <div class="settings-row">
+                    <label>Market Data</label>
+                    <span class="settings-static">DEX Screener</span>
+                </div>
+                <div class="settings-row">
+                    <label>Personal Data</label>
+                    <span class="settings-static">LocalStorage</span>
+                </div>
+                <hr class="settings-divider" />
+                <div class="settings-actions">
+                    <button class="btn btn-outline-danger" id="resetDemoBtn">Reset Demo Data</button>
+                    <button class="btn btn-outline" id="clearWatchlistBtn">Clear Watchlist</button>
+                    <button class="btn btn-outline" id="clearTradesBtn">Clear Trades</button>
+                    <button class="btn btn-outline" id="clearJournalBtn">Clear Journal</button>
+                    <button class="btn btn-danger" id="settingsLogoutBtn">Logout</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===== TOKEN DETAILS MODAL ===== -->
+    <div class="modal-overlay" id="tokenModalOverlay" style="display:none;">
+        <div class="modal" id="tokenModal">
+            <div class="modal-header">
+                <h2 id="tokenModalTitle">$TOKEN</h2>
+                <button class="modal-close" data-close-modal="tokenModalOverlay">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="tokenModalBody">
+                <p>Loading…</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="tokenAddWatchlistBtn">
+                    <i data-lucide="star" class="btn-icon"></i> Add to Watchlist
+                </button>
+                <button class="btn btn-outline" id="tokenRefreshBtn">
+                    <i data-lucide="refresh-cw" class="btn-icon"></i> Refresh
+                </button>
+                <button class="btn btn-outline" data-close-modal="tokenModalOverlay">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ADD TRADE MODAL ===== -->
+    <div class="modal-overlay" id="addTradeModalOverlay" style="display:none;">
+        <div class="modal" id="addTradeModal">
+            <div class="modal-header">
+                <h2>Add Trade</h2>
+                <button class="modal-close" data-close-modal="addTradeModalOverlay">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addTradeForm" class="modal-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Token Symbol</label>
+                            <input type="text" id="tradeToken" required placeholder="e.g. PEPE" />
+                        </div>
+                        <div class="form-group">
+                            <label>Entry Price</label>
+                            <input type="number" id="tradeEntryPrice" step="any" required placeholder="0.00000123" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Exit Price</label>
+                            <input type="number" id="tradeExitPrice" step="any" required placeholder="0.00000246" />
+                        </div>
+                        <div class="form-group">
+                            <label>Position Size (USD)</label>
+                            <input type="number" id="tradePositionSize" step="any" required placeholder="1000" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Entry Market Cap</label>
+                            <input type="number" id="tradeEntryMC" step="any" placeholder="Optional" />
+                        </div>
+                        <div class="form-group">
+                            <label>Exit Market Cap</label>
+                            <input type="number" id="tradeExitMC" step="any" placeholder="Optional" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Setup</label>
+                            <select id="tradeSetup">
+                                <option value="Breakout">Breakout</option>
+                                <option value="Volume Expansion">Volume Expansion</option>
+                                <option value="Momentum">Momentum</option>
+                                <option value="Narrative">Narrative</option>
+                                <option value="Smart Money">Smart Money</option>
+                                <option value="Reversal">Reversal</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Mistake</label>
+                            <select id="tradeMistake">
+                                <option value="">None</option>
+                                <option value="FOMO">FOMO</option>
+                                <option value="Late Entry">Late Entry</option>
+                                <option value="Early Exit">Early Exit</option>
+                                <option value="Overtrading">Overtrading</option>
+                                <option value="Revenge Trade">Revenge Trade</option>
+                                <option value="Poor Risk Management">Poor Risk Management</option>
+                                <option value="No Confirmation">No Confirmation</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Entry Date</label>
+                            <input type="date" id="tradeEntryDate" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Exit Date</label>
+                            <input type="date" id="tradeExitDate" required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Entry Reason</label>
+                        <textarea id="tradeEntryReason" rows="2" placeholder="Why did you enter?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Exit Reason</label>
+                        <textarea id="tradeExitReason" rows="2" placeholder="Why did you exit?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="tradeNotes" rows="2" placeholder="Additional notes…"></textarea>
+                    </div>
+                    <div class="trade-calc-preview" id="tradeCalcPreview"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Save Trade</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ADD JOURNAL MODAL ===== -->
+    <div class="modal-overlay" id="addJournalModalOverlay" style="display:none;">
+        <div class="modal" id="addJournalModal">
+            <div class="modal-header">
+                <h2>New Journal Entry</h2>
+                <button class="modal-close" data-close-modal="addJournalModalOverlay">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addJournalForm" class="modal-form">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="journalDate" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Market Conditions</label>
+                        <input type="text" id="journalMarketConditions" required placeholder="e.g. High volatility, meme coin rally" />
+                    </div>
+                    <div class="form-group">
+                        <label>What I Saw</label>
+                        <textarea id="journalSaw" rows="3" required placeholder="What did you observe in the market?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>What I Did</label>
+                        <textarea id="journalDid" rows="3" required placeholder="What action did you take?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>What Went Well</label>
+                        <textarea id="journalWell" rows="2" placeholder="Positive outcomes…"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>What Went Wrong</label>
+                        <textarea id="journalWrong" rows="2" placeholder="Things to improve…"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Lesson Learned</label>
+                        <textarea id="journalLesson" rows="2" placeholder="Key takeaway…"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Save Entry</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== WATCHLIST CATEGORY MODAL ===== -->
+    <div class="modal-overlay" id="watchlistCategoryOverlay" style="display:none;">
+        <div class="modal modal-sm" id="watchlistCategoryModal">
+            <div class="modal-header">
+                <h3>Add to Watchlist</h3>
+                <button class="modal-close" data-close-modal="watchlistCategoryOverlay">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="watchlist-modal-token" id="watchlistModalToken">$TOKEN</p>
+                <p class="watchlist-modal-address" id="watchlistModalAddress"></p>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="watchlistCategorySelect">
+                        <option value="potential">🔥 Potential</option>
+                        <option value="watching">👀 Watching</option>
+                        <option value="waiting">⏳ Waiting</option>
+                        <option value="avoid">❌ Avoid</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="watchlistNotes" rows="2" placeholder="Optional notes…"></textarea>
+                </div>
+                <button class="btn btn-primary btn-block" id="watchlistConfirmBtn">Add Token</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
