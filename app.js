@@ -1,6 +1,13 @@
 /* ============================================================
-   MEME OS — All Functionality
+   MEME OS — All Functionality (Robust & Safe)
    ============================================================ */
+
+// ---------- SAFE ICON HANDLING ----------
+function safeCreateIcons() {
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+    }
+}
 
 // ---------- LOCAL STORAGE HELPERS ----------
 function saveData(key, data) {
@@ -60,7 +67,6 @@ const DEX_SCREENER_API = 'https://api.dexscreener.com/latest/dex';
 let lastApiCall = 0;
 
 async function fetchDexScreener(query) {
-    // Simple rate limiting (max 1 call per 2 seconds)
     const now = Date.now();
     if (now - lastApiCall < 2000) {
         await new Promise(resolve => setTimeout(resolve, 2000 - (now - lastApiCall)));
@@ -80,19 +86,15 @@ async function fetchDexScreener(query) {
 }
 
 async function fetchTrendingMemeTokens() {
-    // Using a known search query for demo; we will fetch pairs for a few meme coins.
-    // For a real deployment, you could use a search endpoint or a curated list.
     const tokens = ['PEPE', 'WIF', 'BONK', 'SHIB', 'DOGE', 'FLOKI', 'MEME', 'TOSHI'];
     const allPairs = [];
     for (const token of tokens) {
         const data = await fetchDexScreener(`search?q=${token}`);
         if (data && data.pairs && data.pairs.length > 0) {
-            allPairs.push(...data.pairs.slice(0, 3)); // take top 3 per token
+            allPairs.push(...data.pairs.slice(0, 3));
         }
-        // small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 500));
     }
-    // Deduplicate by pair address
     const unique = [];
     const seen = new Set();
     for (const pair of allPairs) {
@@ -105,8 +107,7 @@ async function fetchTrendingMemeTokens() {
 }
 
 async function fetchPairData(pairAddress) {
-    const data = await fetchDexScreener(`pairs/${pairAddress}`);
-    return data;
+    return await fetchDexScreener(`pairs/${pairAddress}`);
 }
 
 function formatCurrency(value, decimals = 2) {
@@ -200,7 +201,6 @@ function generateDemoJournal() {
     ];
 }
 
-// ---------- DEMO CHARTS DATA ----------
 function generateEquityData() {
     const data = [];
     const days = 60;
@@ -215,17 +215,21 @@ function generateEquityData() {
 // ---------- GLOBAL STATE ----------
 let currentTokenForWatchlist = null;
 
-// ---------- INITIALIZATION ----------
+// ---------- DOM READY ----------
 document.addEventListener('DOMContentLoaded', function() {
-    lucide.createIcons();
+    safeCreateIcons();
 
-    // Page-specific logic
-    if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
+    // Robust page detection: look for specific elements
+    const isLoginPage = !!document.getElementById('loginForm');
+    const isDashboardPage = !!document.getElementById('sidebar');
+    const isScannerPage = !!document.getElementById('scannerTableBody');
+
+    if (isLoginPage) {
         initLoginPage();
-    } else if (window.location.pathname.endsWith('dashboard.html')) {
+    } else if (isDashboardPage) {
         if (!requireAuth()) return;
         initDashboard();
-    } else if (window.location.pathname.endsWith('scanner.html')) {
+    } else if (isScannerPage) {
         if (!requireAuth()) return;
         initScanner();
     }
@@ -277,7 +281,7 @@ function initLoginPage() {
 
 // ---------- DASHBOARD ----------
 function initDashboard() {
-    // Set up sidebar navigation
+    // Sidebar navigation
     const navItems = document.querySelectorAll('.nav-item[data-section]');
     const sections = document.querySelectorAll('.content-section');
     const sidebar = document.getElementById('sidebar');
@@ -295,7 +299,6 @@ function initDashboard() {
         if (targetSection) targetSection.classList.add('active');
         if (targetNav) targetNav.classList.add('active');
 
-        // Close mobile sidebar
         if (window.innerWidth <= 768) {
             sidebar.classList.remove('open');
             sidebarOverlay.classList.remove('active');
@@ -341,7 +344,6 @@ function initDashboard() {
         saveData('memeOS_settings', { chain: 'solana', currency: 'USD' });
     }
 
-    // Load and display stats
     updateDashboardStats();
     renderEquityChart();
     loadOverviewMarketData();
@@ -511,7 +513,6 @@ document.getElementById('watchlistConfirmBtn').addEventListener('click', functio
     if (!pair) return;
 
     const watchlist = loadData('memeOS_watchlist', []);
-    // Check if already exists
     if (watchlist.some(item => item.pairAddress === pair.pairAddress)) {
         showToast('Token already in watchlist', 'warning');
         return;
@@ -586,7 +587,6 @@ function displayRiskAnalysis(pair) {
     const resultDiv = document.getElementById('riskResult');
     resultDiv.style.display = 'block';
 
-    // Simple heuristic risk scoring (0-100, higher = more risk)
     const liquidity = pair.liquidity?.usd || 0;
     const volume = pair.volume?.h24 || 0;
     const age = getPairAge(pair);
@@ -665,7 +665,6 @@ async function renderWatchlist() {
     for (const item of watchlist) {
         const card = document.createElement('div');
         card.className = 'watchlist-card';
-        // Fetch latest data for this pair
         const data = await fetchDexScreener(`pairs/${item.pairAddress}`);
         let currentPrice = 'N/A';
         let change24h = 'N/A';
@@ -693,7 +692,6 @@ async function renderWatchlist() {
             </div>
         `;
         content.appendChild(card);
-        // Delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 300));
     }
 }
@@ -711,13 +709,11 @@ function initTrades() {
     renderTrades();
     document.getElementById('addTradeBtn').addEventListener('click', () => {
         document.getElementById('addTradeModalOverlay').style.display = 'flex';
-        // Set default dates
         document.getElementById('tradeEntryDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('tradeExitDate').value = new Date().toISOString().split('T')[0];
         updateTradeCalcPreview();
     });
 
-    // Trade form calculation
     document.getElementById('tradeEntryPrice').addEventListener('input', updateTradeCalcPreview);
     document.getElementById('tradeExitPrice').addEventListener('input', updateTradeCalcPreview);
     document.getElementById('tradePositionSize').addEventListener('input', updateTradeCalcPreview);
@@ -818,7 +814,6 @@ function renderTrades() {
         });
     }
 
-    // Update trade stats
     const totalPnL = trades.reduce((sum, t) => sum + t.pnl, 0);
     const wins = trades.filter(t => t.result === 'win');
     const losses = trades.filter(t => t.result === 'loss');
@@ -909,7 +904,6 @@ function renderAnalyticsCharts() {
     const trades = loadData('memeOS_trades', []);
     if (trades.length === 0) return;
 
-    // Equity curve
     const equityCtx = document.getElementById('analyticsEquityChart').getContext('2d');
     const equityData = generateEquityData();
     new Chart(equityCtx, {
@@ -929,7 +923,6 @@ function renderAnalyticsCharts() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#9898a8' } }, x: { ticks: { color: '#9898a8', maxTicksLimit: 10 } } } }
     });
 
-    // Daily P&L (simulated)
     const dailyCtx = document.getElementById('analyticsDailyChart').getContext('2d');
     const dailyData = [];
     for (let i = 0; i < 30; i++) {
@@ -948,7 +941,6 @@ function renderAnalyticsCharts() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#9898a8' } }, x: { ticks: { color: '#9898a8', maxTicksLimit: 10 } } } }
     });
 
-    // Win vs Loss pie
     const winLossCtx = document.getElementById('analyticsWinLossChart').getContext('2d');
     const wins = trades.filter(t => t.result === 'win').length;
     const losses = trades.length - wins;
@@ -965,7 +957,6 @@ function renderAnalyticsCharts() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#9898a8' } } } }
     });
 
-    // Setup performance
     const setupCtx = document.getElementById('analyticsSetupChart').getContext('2d');
     const setups = [...new Set(trades.map(t => t.setup))];
     const setupData = setups.map(setup => {
@@ -986,7 +977,6 @@ function renderAnalyticsCharts() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#9898a8' } }, x: { ticks: { color: '#9898a8' } } } }
     });
 
-    // Mistake impact
     const mistakeCtx = document.getElementById('analyticsMistakeChart').getContext('2d');
     const mistakes = ['FOMO', 'Early Exit', 'Late Entry', 'Overtrading', 'Revenge Trade', 'Poor Risk Management', 'No Confirmation'];
     const mistakeData = mistakes.map(m => {
@@ -1113,11 +1103,69 @@ function initScanner() {
             return matchesSearch && matchesChain && matchesMC && matchesLiq && matchesVol && matchesChange;
         });
 
-        // Sort
         filtered.sort((a, b) => {
             switch (sortBy) {
                 case 'volume': return (b.volume?.h24 || 0) - (a.volume?.h24 || 0);
                 case 'liquidity': return (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0);
                 case 'marketCap': return (b.marketCap || 0) - (a.marketCap || 0);
                 case 'priceChange': return (b.priceChange?.h24 || 0) - (a.priceChange?.h24 || 0);
-                case 'txns': return ((b.txns?.h24?.buys || 0) +
+                case 'txns': return ((b.txns?.h24?.buys || 0) + (b.txns?.h24?.sells || 0)) - ((a.txns?.h24?.buys || 0) + (a.txns?.h24?.sells || 0));
+                default: return 0;
+            }
+        });
+
+        tableBody.innerHTML = '';
+        filtered.forEach(pair => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div class="token-cell">
+                        <span class="token-avatar">${pair.baseToken.symbol.charAt(0)}</span>
+                        ${pair.baseToken.symbol}
+                    </div>
+                </td>
+                <td>$${parseFloat(pair.priceUsd).toFixed(8)}</td>
+                <td>${formatCurrency(pair.marketCap)}</td>
+                <td>${formatCurrency(pair.liquidity?.usd)}</td>
+                <td>${formatCurrency(pair.volume?.h24)}</td>
+                <td class="${pair.priceChange.h24 >= 0 ? 'text-success' : 'text-danger'}">${pair.priceChange.h24 >= 0 ? '+' : ''}${pair.priceChange.h24.toFixed(2)}%</td>
+                <td>${formatNumber(pair.txns?.h24?.buys)}</td>
+                <td>${formatNumber(pair.txns?.h24?.sells)}</td>
+                <td>${getPairAge(pair)}</td>
+            `;
+            tr.addEventListener('click', () => openScannerTokenModal(pair));
+            tableBody.appendChild(tr);
+        });
+    }
+
+    function openScannerTokenModal(pair) {
+        const modal = document.getElementById('scannerTokenModalOverlay');
+        const title = document.getElementById('scannerTokenModalTitle');
+        const body = document.getElementById('scannerTokenModalBody');
+        title.textContent = `${pair.baseToken.symbol}`;
+        body.innerHTML = `
+            <p><strong>Price:</strong> $${parseFloat(pair.priceUsd).toFixed(8)}</p>
+            <p><strong>Market Cap:</strong> ${formatCurrency(pair.marketCap)}</p>
+            <p><strong>Liquidity:</strong> ${formatCurrency(pair.liquidity?.usd)}</p>
+            <p><strong>24H Volume:</strong> ${formatCurrency(pair.volume?.h24)}</p>
+            <p><strong>24H Change:</strong> ${pair.priceChange.h24 >= 0 ? '+' : ''}${pair.priceChange.h24.toFixed(2)}%</p>
+            <hr style="border-color: var(--border-color); margin: 12px 0;">
+            <p><strong>Chain:</strong> ${pair.chainId}</p>
+            <p><strong>DEX:</strong> ${pair.dexId}</p>
+            <p><strong>Pair:</strong> ${pair.pairAddress}</p>
+            <p><strong>Buys:</strong> ${formatNumber(pair.txns?.h24?.buys)}</p>
+            <p><strong>Sells:</strong> ${formatNumber(pair.txns?.h24?.sells)}</p>
+            <p><strong>Transactions:</strong> ${formatNumber(pair.txns?.h24?.buys + pair.txns?.h24?.sells)}</p>
+        `;
+        modal.style.display = 'flex';
+    }
+
+    searchBtn.addEventListener('click', applyFiltersAndRender);
+    refreshBtn.addEventListener('click', loadScannerData);
+    retryBtn.addEventListener('click', loadScannerData);
+    document.getElementById('scannerSearchInput').addEventListener('keyup', applyFiltersAndRender);
+    document.querySelectorAll('.filter-group select').forEach(sel => sel.addEventListener('change', applyFiltersAndRender));
+    document.getElementById('scannerSortSelect').addEventListener('change', applyFiltersAndRender);
+
+    loadScannerData();
+    }
