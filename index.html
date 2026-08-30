@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- Lucide Icons – optional; app.js will handle safely if undefined -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
 </head>
 <body class="login-page">
     <div class="login-bg-elements" id="loginBgElements" aria-hidden="true"></div>
@@ -70,9 +71,7 @@
         </div>
     </div>
 
+    <!-- Main app logic (handles login, icons, etc.) -->
     <script src="app.js"></script>
-    <script>
-        lucide.createIcons();
-    </script>
 </body>
 </html>
