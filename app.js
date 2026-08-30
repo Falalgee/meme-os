@@ -1,5 +1,5 @@
 /* ============================================================
-   MEME OS — All Functionality (Robust & Safe)
+   MEME OS — All Functionality (User‑driven Data)
    ============================================================ */
 
 // ---------- SAFE ICON HANDLING ----------
@@ -141,67 +141,8 @@ function getPairAge(pair) {
     return 'N/A';
 }
 
-// ---------- DEMO DATA ----------
-function generateDemoTrades() {
-    const setups = ['Breakout', 'Volume Expansion', 'Momentum', 'Narrative', 'Smart Money', 'Reversal'];
-    const mistakes = ['', 'FOMO', 'Late Entry', 'Early Exit', 'Overtrading', 'Revenge Trade', 'Poor Risk Management', 'No Confirmation'];
-    const tokens = ['PEPE', 'WIF', 'BONK', 'SHIB', 'DOGE', 'FLOKI', 'MEME', 'TOSHI', 'AIDOGE', 'BABYDOGE'];
-    const trades = [];
-    for (let i = 0; i < 57; i++) {
-        const entry = Math.random() * 0.0001 + 0.000001;
-        const exit = Math.random() * 0.0002 + 0.0000005;
-        const positionSize = Math.floor(Math.random() * 2000) + 100;
-        const direction = Math.random() > 0.5 ? 1 : -1;
-        const pl = (exit - entry) * (positionSize / entry) * direction;
-        const roi = (pl / positionSize) * 100;
-        trades.push({
-            id: `demo-${i}`,
-            token: tokens[Math.floor(Math.random() * tokens.length)],
-            entryPrice: entry,
-            exitPrice: exit,
-            positionSize: positionSize,
-            entryMC: Math.random() * 1e8,
-            exitMC: Math.random() * 1e8,
-            setup: setups[Math.floor(Math.random() * setups.length)],
-            mistake: mistakes[Math.floor(Math.random() * mistakes.length)],
-            entryReason: '',
-            exitReason: '',
-            notes: '',
-            date: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
-            pnl: pl,
-            roi: roi,
-            result: pl >= 0 ? 'win' : 'loss'
-        });
-    }
-    return trades;
-}
-
-function generateDemoJournal() {
-    return [
-        {
-            id: 'j1',
-            date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-            marketConditions: 'High volatility, meme coin rally',
-            saw: 'Massive volume spikes on small caps',
-            did: 'Entered PEPE breakout',
-            well: 'Good entry timing',
-            wrong: 'Did not set stop loss',
-            lesson: 'Always set stop loss on meme trades'
-        },
-        {
-            id: 'j2',
-            date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-            marketConditions: 'Choppy market',
-            saw: 'Multiple fakeouts',
-            did: 'Stayed out',
-            well: 'Patience',
-            wrong: 'Felt FOMO',
-            lesson: 'No trade is better than bad trade'
-        }
-    ];
-}
-
-function generateEquityData() {
+// ---------- DEMO DATA (only used for simulated smart money, not personal data) ----------
+function generateDemoEquityData() {
     const data = [];
     const days = 60;
     let value = 10000;
@@ -219,7 +160,7 @@ let currentTokenForWatchlist = null;
 document.addEventListener('DOMContentLoaded', function() {
     safeCreateIcons();
 
-    // Robust page detection: look for specific elements
+    // Robust page detection
     const isLoginPage = !!document.getElementById('loginForm');
     const isDashboardPage = !!document.getElementById('sidebar');
     const isScannerPage = !!document.getElementById('scannerTableBody');
@@ -237,7 +178,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ---------- LOGIN PAGE ----------
 function initLoginPage() {
-    // Animated background orbs
     const bg = document.getElementById('loginBgElements');
     if (bg) {
         for (let i = 0; i < 5; i++) {
@@ -252,7 +192,6 @@ function initLoginPage() {
         }
     }
 
-    // Redirect if already authenticated
     if (isAuthenticated()) {
         window.location.href = 'dashboard.html';
         return;
@@ -330,19 +269,11 @@ function initDashboard() {
     logoutBtn.addEventListener('click', logout);
     settingsLogoutBtn.addEventListener('click', logout);
 
-    // Initialize demo data if not present
-    if (!localStorage.getItem('memeOS_trades')) {
-        saveData('memeOS_trades', generateDemoTrades());
-    }
-    if (!localStorage.getItem('memeOS_journal')) {
-        saveData('memeOS_journal', generateDemoJournal());
-    }
-    if (!localStorage.getItem('memeOS_watchlist')) {
-        saveData('memeOS_watchlist', []);
-    }
-    if (!localStorage.getItem('memeOS_settings')) {
-        saveData('memeOS_settings', { chain: 'solana', currency: 'USD' });
-    }
+    // Ensure essential data structures exist (empty by default)
+    if (!localStorage.getItem('memeOS_trades')) saveData('memeOS_trades', []);
+    if (!localStorage.getItem('memeOS_journal')) saveData('memeOS_journal', []);
+    if (!localStorage.getItem('memeOS_watchlist')) saveData('memeOS_watchlist', []);
+    if (!localStorage.getItem('memeOS_settings')) saveData('memeOS_settings', { chain: 'solana', currency: 'USD' });
 
     updateDashboardStats();
     renderEquityChart();
@@ -362,18 +293,38 @@ function updateDashboardStats() {
     const wins = trades.filter(t => t.result === 'win').length;
     const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
     const totalPnL = trades.reduce((sum, t) => sum + (t.pnl || 0), 0);
-    const startingCapital = 10000;
-    const portfolioValue = startingCapital + totalPnL;
+    const startingCapital = 10000; // You can change this in settings
+    const portfolioValue = totalTrades > 0 ? startingCapital + totalPnL : startingCapital;
 
     document.getElementById('statPortfolio').textContent = formatCurrency(portfolioValue);
     document.getElementById('statPnL').textContent = `${totalPnL >= 0 ? '+' : ''}${formatCurrency(totalPnL)}`;
-    document.getElementById('statWinRate').textContent = `${winRate.toFixed(1)}%`;
+    document.getElementById('statWinRate').textContent = totalTrades > 0 ? `${winRate.toFixed(1)}%` : 'N/A';
     document.getElementById('statTrades').textContent = totalTrades;
 }
 
 function renderEquityChart() {
     const ctx = document.getElementById('equityChart').getContext('2d');
-    const equityData = generateEquityData();
+    const trades = loadData('memeOS_trades', []);
+    let equityData;
+    if (trades.length > 0) {
+        // Build equity curve from actual trades (simplified: cumulative P&L)
+        equityData = [];
+        let cumulative = 10000; // starting capital
+        const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date));
+        equityData.push({ x: new Date(sortedTrades[0].date), y: cumulative });
+        sortedTrades.forEach(trade => {
+            cumulative += trade.pnl;
+            equityData.push({ x: new Date(trade.date), y: cumulative });
+        });
+        // Add a final point today
+        equityData.push({ x: new Date(), y: cumulative });
+    } else {
+        // No trades: show flat starting capital
+        equityData = [
+            { x: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), y: 10000 },
+            { x: new Date(), y: 10000 }
+        ];
+    }
     new Chart(ctx, {
         type: 'line',
         data: {
@@ -542,6 +493,7 @@ document.querySelectorAll('[data-close-modal]').forEach(btn => {
 // ---------- SMART MONEY ----------
 function initSmartMoney() {
     const feed = document.getElementById('smartMoneyFeed');
+    // Simulated wallet activity (clearly labeled as simulated)
     const activities = [
         { wallet: 'Alpha 01', action: 'bought', token: '$PEPE', amount: '$8,420', time: '2 minutes ago' },
         { wallet: 'Alpha 03', action: 'sold', token: '$WIF', amount: '$4,820', time: '6 minutes ago' },
@@ -770,6 +722,7 @@ function initTrades() {
         this.reset();
         renderTrades();
         updateDashboardStats();
+        renderEquityChart(); // update equity chart
         showToast('Trade saved', 'success');
     });
 }
@@ -814,6 +767,7 @@ function renderTrades() {
         });
     }
 
+    // Update trade stats
     const totalPnL = trades.reduce((sum, t) => sum + t.pnl, 0);
     const wins = trades.filter(t => t.result === 'win');
     const losses = trades.filter(t => t.result === 'loss');
@@ -822,9 +776,9 @@ function renderTrades() {
     const avgLoss = losses.length > 0 ? losses.reduce((sum, t) => sum + t.pnl, 0) / losses.length : 0;
 
     document.getElementById('tradeTotalPnL').textContent = `${totalPnL >= 0 ? '+' : ''}${totalPnL.toFixed(2)}`;
-    document.getElementById('tradeWinRate').textContent = `${winRate.toFixed(1)}%`;
-    document.getElementById('tradeAvgWin').textContent = `+${avgWin.toFixed(2)}`;
-    document.getElementById('tradeAvgLoss').textContent = avgLoss.toFixed(2);
+    document.getElementById('tradeWinRate').textContent = trades.length > 0 ? `${winRate.toFixed(1)}%` : 'N/A';
+    document.getElementById('tradeAvgWin').textContent = wins.length > 0 ? `+${avgWin.toFixed(2)}` : 'N/A';
+    document.getElementById('tradeAvgLoss').textContent = losses.length > 0 ? avgLoss.toFixed(2) : 'N/A';
 }
 
 function deleteTrade(id) {
@@ -833,6 +787,7 @@ function deleteTrade(id) {
     saveData('memeOS_trades', trades);
     renderTrades();
     updateDashboardStats();
+    renderEquityChart();
     showToast('Trade deleted', 'info');
 }
 
@@ -902,10 +857,30 @@ function initAnalytics() {
 
 function renderAnalyticsCharts() {
     const trades = loadData('memeOS_trades', []);
-    if (trades.length === 0) return;
+    if (trades.length === 0) {
+        // Clear canvases or show empty states
+        ['analyticsEquityChart', 'analyticsDailyChart', 'analyticsWinLossChart', 'analyticsSetupChart', 'analyticsMistakeChart'].forEach(id => {
+            const canvas = document.getElementById(id);
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        });
+        return;
+    }
 
+    // Equity curve (based on actual trades)
     const equityCtx = document.getElementById('analyticsEquityChart').getContext('2d');
-    const equityData = generateEquityData();
+    const equityData = [];
+    let cumulative = 10000;
+    const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date));
+    equityData.push({ x: new Date(sortedTrades[0].date), y: cumulative });
+    sortedTrades.forEach(trade => {
+        cumulative += trade.pnl;
+        equityData.push({ x: new Date(trade.date), y: cumulative });
+    });
+    equityData.push({ x: new Date(), y: cumulative });
+
     new Chart(equityCtx, {
         type: 'line',
         data: {
@@ -923,24 +898,29 @@ function renderAnalyticsCharts() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#9898a8' } }, x: { ticks: { color: '#9898a8', maxTicksLimit: 10 } } } }
     });
 
+    // Daily P&L (aggregate by day)
     const dailyCtx = document.getElementById('analyticsDailyChart').getContext('2d');
-    const dailyData = [];
-    for (let i = 0; i < 30; i++) {
-        dailyData.push({ x: new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000), y: Math.random() * 300 - 100 });
-    }
+    const dailyMap = {};
+    trades.forEach(trade => {
+        const date = new Date(trade.date).toDateString();
+        dailyMap[date] = (dailyMap[date] || 0) + trade.pnl;
+    });
+    const dailyLabels = Object.keys(dailyMap);
+    const dailyValues = dailyLabels.map(d => dailyMap[d]);
     new Chart(dailyCtx, {
         type: 'bar',
         data: {
-            labels: dailyData.map(d => d.x.toLocaleDateString()),
+            labels: dailyLabels,
             datasets: [{
                 label: 'P&L',
-                data: dailyData.map(d => d.y),
-                backgroundColor: dailyData.map(d => d.y >= 0 ? '#10b981' : '#ef4444')
+                data: dailyValues,
+                backgroundColor: dailyValues.map(v => v >= 0 ? '#10b981' : '#ef4444')
             }]
         },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#9898a8' } }, x: { ticks: { color: '#9898a8', maxTicksLimit: 10 } } } }
     });
 
+    // Win vs Loss pie
     const winLossCtx = document.getElementById('analyticsWinLossChart').getContext('2d');
     const wins = trades.filter(t => t.result === 'win').length;
     const losses = trades.length - wins;
@@ -957,6 +937,7 @@ function renderAnalyticsCharts() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#9898a8' } } } }
     });
 
+    // Setup performance
     const setupCtx = document.getElementById('analyticsSetupChart').getContext('2d');
     const setups = [...new Set(trades.map(t => t.setup))];
     const setupData = setups.map(setup => {
@@ -977,6 +958,7 @@ function renderAnalyticsCharts() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#9898a8' } }, x: { ticks: { color: '#9898a8' } } } }
     });
 
+    // Mistake impact
     const mistakeCtx = document.getElementById('analyticsMistakeChart').getContext('2d');
     const mistakes = ['FOMO', 'Early Exit', 'Late Entry', 'Overtrading', 'Revenge Trade', 'Poor Risk Management', 'No Confirmation'];
     const mistakeData = mistakes.map(m => {
@@ -1039,6 +1021,7 @@ function initSettings() {
         saveData('memeOS_trades', []);
         renderTrades();
         updateDashboardStats();
+        renderEquityChart();
         showToast('Trades cleared', 'info');
     });
     document.getElementById('clearJournalBtn').addEventListener('click', () => {
@@ -1168,4 +1151,4 @@ function initScanner() {
     document.getElementById('scannerSortSelect').addEventListener('change', applyFiltersAndRender);
 
     loadScannerData();
-    }
+       }
